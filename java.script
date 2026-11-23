@@ -1,0 +1,134 @@
+const form = document.getElementById('pedido');
+const selectSabor = document.getElementById('sabor');
+const inputPreco = document.getElementById('preco');
+const inputEndereco = document.getElementById('endereco');
+const selectPagamento = document.getElementById('pagamento');
+const selectSituacao = document.getElementById('situacao');
+const inputEditId = document.getElementById('edit-id');
+const btnSubmit = document.getElementById('btn-submit');
+const mensagem = document.getElementById('mensagem');
+
+const listaPedidos = document.getElementById('lista-pedidos');
+const contadorPedidos = document.getElementById('contador-pedidos');
+const inputPesquisa = document.getElementById('pesquisa');
+
+// Dados iniciais de exemplo (igual à estrutura da imagem)
+let pedidos = [
+  { id: 1, sabor: 'Chocolate', preco: 15, endereco: 'Rua das Flores, 120 - Centro', pagamento: 'Pix', situacao: 'Em preparo' },
+  { id: 2, sabor: 'Cookies', preco: 17, endereco: 'Av. Brasil, 450 - Jardim', pagamento: 'Cartão', situacao: 'Entregue' },
+  { id: 3, sabor: 'Morango', preco: 15, endereco: 'Rua Bela Vista, 88 - Sul', pagamento: 'Dinheiro', situacao: 'Em preparo' }
+];
+
+// Atualiza o preço automaticamente ao escolher o sabor
+selectSabor.addEventListener('change', () => {
+  const opcao = selectSabor.options[selectSabor.selectedIndex];
+  const preco = opcao.getAttribute('data-preco');
+  inputPreco.value = preco ? `R$ ${Number(preco).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+});
+
+// Renderiza a tabela
+function renderizarTabela() {
+  const termo = inputPesquisa.value.toLowerCase().trim();
+
+  const filtrados = pedidos.filter(p =>
+    p.sabor.toLowerCase().includes(termo) ||
+    p.endereco.toLowerCase().includes(termo) ||
+    p.pagamento.toLowerCase().includes(termo) ||
+    p.situacao.toLowerCase().includes(termo)
+  );
+
+  contadorPedidos.textContent = `${filtrados.length} ${filtrados.length === 1 ? 'pedido' : 'pedidos'}`;
+  listaPedidos.innerHTML = '';
+
+  filtrados.forEach(pedido => {
+    const tr = document.createElement('tr');
+    const badgeClasse = pedido.situacao === 'Entregue' ? 'badge-entregue' : 'badge-preparo';
+    const precoFormatado = `R$ ${Number(pedido.preco).toFixed(2).replace('.', ',')}`;
+
+    tr.innerHTML = `
+      <td>
+        <span class="pedido-titulo">${pedido.sabor} (${precoFormatado})</span>
+        <span class="pedido-subtitulo">${pedido.endereco}</span>
+      </td>
+      <td>${pedido.pagamento}</td>
+      <td><span class="badge ${badgeClasse}">${pedido.situacao}</span></td>
+      <td>
+        <div class="acoes-grupo">
+          <button type="button" class="btn-acao btn-editar" onclick="editarPedido(${pedido.id})">Editar</button>
+          <button type="button" class="btn-acao btn-excluir" onclick="excluirPedido(${pedido.id})">Excluir</button>
+        </div>
+      </td>
+    `;
+    listaPedidos.appendChild(tr);
+  });
+}
+
+// Cadastrar ou atualizar pedido
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const opcao = selectSabor.options[selectSabor.selectedIndex];
+  const preco = Number(opcao.getAttribute('data-preco'));
+  const editId = inputEditId.value;
+
+  if (editId) {
+    const index = pedidos.findIndex(p => p.id === Number(editId));
+    if (index !== -1) {
+      pedidos[index] = {
+        id: Number(editId),
+        sabor: selectSabor.value,
+        preco: preco,
+        endereco: inputEndereco.value.trim(),
+        pagamento: selectPagamento.value,
+        situacao: selectSituacao.value
+      };
+    }
+    mensagem.textContent = 'Pedido atualizado com sucesso!';
+    inputEditId.value = '';
+    btnSubmit.textContent = '🛒 Fazer pedido';
+  } else {
+    pedidos.unshift({
+      id: Date.now(),
+      sabor: selectSabor.value,
+      preco: preco,
+      endereco: inputEndereco.value.trim(),
+      pagamento: selectPagamento.value,
+      situacao: selectSituacao.value
+    });
+    mensagem.textContent = 'Pedido cadastrado com sucesso!';
+  }
+
+  form.reset();
+  inputPreco.value = 'R$ 0,00';
+  renderizarTabela();
+
+  setTimeout(() => { mensagem.textContent = ''; }, 3000);
+});
+
+// Editar pedido
+window.editarPedido = function(id) {
+  const pedido = pedidos.find(p => p.id === id);
+  if (!pedido) return;
+
+  inputEditId.value = pedido.id;
+  selectSabor.value = pedido.sabor;
+  inputPreco.value = `R$ ${Number(pedido.preco).toFixed(2).replace('.', ',')}`;
+  inputEndereco.value = pedido.endereco;
+  selectPagamento.value = pedido.pagamento;
+  selectSituacao.value = pedido.situacao;
+
+  btnSubmit.textContent = '💾 Salvar alterações';
+  mensagem.textContent = 'Editando pedido selecionado...';
+};
+
+// Excluir pedido
+window.excluirPedido = function(id) {
+  pedidos = pedidos.filter(p => p.id !== id);
+  renderizarTabela();
+};
+
+// Pesquisa em tempo real
+inputPesquisa.addEventListener('input', renderizarTabela);
+
+// Inicializa a lista na tela
+renderizarTabela();
