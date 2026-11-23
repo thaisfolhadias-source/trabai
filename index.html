@@ -24,14 +24,14 @@
           <label for="sabor">Sabor do sorvete</label>
           <select id="sabor" required>
             <option value="">Selecione o sabor</option>
-            <option value="Chocolate" data-preco="15">Chocolate</option>
-            <option value="Morango" data-preco="15">Morango</option>
-            <option value="Baunilha" data-preco="12">Baunilha</option>
-            <option value="Cookies" data-preco="17">Cookies</option>
+            <option value="Chocolate" data-preco="15.00">Chocolate</option>
+            <option value="Morango" data-preco="15.00">Morango</option>
+            <option value="Baunilha" data-preco="12.00">Baunilha</option>
+            <option value="Cookies" data-preco="17.00">Cookies</option>
           </select>
 
           <label for="preco">Preço do produto</label>
-          <input id="preco" value="R$ 0,00" readonly>
+          <input id="preco" type="text" inputmode="numeric" placeholder="R$ 0,00" value="R$ 0,00" required>
 
           <label for="endereco">Endereço do cliente</label>
           <input id="endereco" type="text" placeholder="Ex.: Rua das Flores, 120 - Centro" required>
@@ -51,6 +51,7 @@
           </select>
 
           <button type="submit" id="btn-submit">🛒 Fazer pedido</button>
+          <button type="button" id="btn-cancelar" class="btn-cancelar" style="display: none;">Cancelar edição</button>
           <p id="mensagem" role="status"></p>
         </form>
       </section>
